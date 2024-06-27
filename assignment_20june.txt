@@ -1,0 +1,261 @@
+1. How many students have passing marks (greater than 50) in all subjects?
+ans.
+db.students.aggregate([
+  {
+    $project: {
+      PassingMarksAllSub: {
+        $and: [
+          { $gte: ["$marks.Math", 50] },
+          { $gte: ["$marks.Science", 50] },          
+          { $gte: ["$marks.English", 50] },
+          { $gte: ["$marks.History", 50] }
+        ]
+      }
+    }
+  },
+  {
+    $count: "StuwithPassmarks"
+  }
+])
+
+2. How many students have an average mark of less than 50?
+ans.
+db.students.aggregate([
+  {
+    $project: {
+      name: 1,
+      marks: 1,
+      averageMark: {
+        $avg: {
+          $objectToArray: "$marks"
+        }
+      }
+    }
+  },
+  {
+    $match: {
+      averageMark: { $lt: 50 }
+    }
+  },
+  {
+    $count: "studentsWithAverageLessThan50"
+  }
+])
+
+3. How many students are from each city?
+ ans.
+db.students.aggregate([
+{
+    $group: {
+      _id: "$address.city",
+      numberOfStudents: { $sum: 1 }
+    }
+  },
+  {
+    $project: {
+      _id: 0, 
+      city: "$_id",
+      numberOfStudents:1
+    }
+  }
+])
+
+4. List all students who have a specific skill (e.g., "Python").
+ans.
+db.students.aggregate([
+{
+    $match: {
+      "skills": "Python" 
+    } },
+  {
+    $project: {
+      _id: 0,
+      name: 1,
+      skills: 1
+    }
+  }
+])
+
+5. What is the average age of students who have more than one hobby?
+ans.
+db.students.aggregate([
+{ $match: {
+      $expr: { $gt: [{ $size: "$hobbies" }, 1] }
+    }},
+  {
+    $group: {
+      _id: null,
+      averageAge: { $avg: "$age" }
+    } },
+  {
+    $project: {
+      _id: 0,
+      averageAge: 1
+    }  }
+])
+
+6. Find the student(s) with the highest average marks.
+ans.
+db.students.aggregate([
+  {
+    $project: {
+      name: 1,
+      marks: 1,
+      averageMarks: {
+        $avg: {
+          $objectToArray: "$marks"}
+      }  }
+  },
+  {
+    $sort: {
+      averageMarks: -1
+    }  },
+  {
+    $limit: 1
+  }
+])
+
+7. How many students are male, female?
+ans.
+db.students.aggregate([
+ {
+    $group: {
+      _id: "$gender",
+      numberOfStudents: { $sum: 1 }
+    }},
+  {
+    $project: {
+      gender: "$_id",
+      numberOfStudents:1
+    } }
+])
+
+8. List all students who live in a specific state (e.g., "CA").
+ans.
+db.students.aggregate([
+  {
+    $match: {
+      "address.state": "CA" }
+  },
+  {
+    $project: {
+      _id: 0,
+      name: 1,
+      address: 1
+    }  }
+])
+
+9. What is the average mark in Math for students who have the skill "JavaScript"?
+ans.
+db.students.aggregate([
+ {
+    $match: {
+      skills: "JavaScript" 
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      mathMarks: "$marks.math",
+      count: { $literal: 1 }  // $literal used to count each matching document
+    } },
+  {
+    $group: {
+      _id: null,
+      totalMathMarks: { $sum: "$mathMarks" },
+      totalCount: { $sum: "$count" }
+    }  },
+  {
+    $project: {
+      averageMathMarks: { $divide: ["$totalMathMarks", "$totalCount"] }
+    }  }
+])
+
+10. How many students have "coding" as one of their hobbies?
+db.students.aggregate(
+ans.
+db.students.aggregate([
+{
+$match:{
+hobbies:"coding"
+}
+},
+{
+$count: 'totalStudents'
+}]
+)
+
+11. List students along with their average marks who have more than 3 skills.
+ans.
+db.students.aggregate([
+  {
+    $project: {
+      name: 1,
+      marks: 1,
+      numberOfSkills: { $size: "$skills" },
+      averageMarks: {
+        $avg: {
+          $objectToArray: "$marks"
+        }}
+    }},
+  {
+    $match: {
+      numberOfSkills: { $gt: 3}
+    }},
+  {
+    $project: {
+      name: 1,
+      averageMarks: 1,
+      numberOfSkills: 1
+    }}
+])
+
+12. Find the number of students for each role (e.g., "Student").
+ans.
+db.students.aggregate([
+  {
+    $group: {
+      _id: "$role",
+      numberOfStudents: { $sum: 1 }
+    }
+  },
+  {
+    $project: {
+      role: "$_id",
+      numberOfStudents: 1
+    }
+  }
+])
+
+13. List the top 3 students with the highest marks in Science.
+ans. 
+db.students.aggregate( [
+  {
+    $sort: {
+      "marks.science": -1
+    }
+  },
+  {
+    $limit: 3
+  },
+  {
+    $project: {
+      username: 1,
+      name: 1,
+      scienceMarks: "$marks.science"
+    }
+  }
+])
+
+14. How many students have an address in a specific zip code (e.g., "10001")?
+ans. 
+db.students.aggregate(
+[{
+$match:{
+"address.zip":"10001"
+}
+},
+{
+$count: 'Totalusers'
+}]
+)
